@@ -24,6 +24,12 @@ freely, subject to the following restrictions:
 #include <algorithm>
 #include <math.h>
 #include <stdio.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core/mat.hpp>
+#include "opencv2/imgproc/imgproc.hpp"
+
+#include <iostream>
 
 #include "../lodepng/lodepng.h"
 
@@ -345,6 +351,9 @@ int main() {
     /* Play with these constants, if you want */
     const int sizeX = 128;
     const int sizeY = 128;
+
+    // const int sizeX = 256;
+    // const int sizeY = 256;
     
     const double density = 0.1;
     const double timestep = 0.005;
@@ -355,7 +364,13 @@ int main() {
 
     double time = 0.0;
     int iterations = 0;
+    float res_scale = 4;
+
+    bool display_bool = true; 
     
+    cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
+    // cv::namedWindow( "Display window", cv::WINDOW_NORMAL );// Create a window for display.
+
     while (time < 8.0) {
         /* Use four substeps per iteration */
         for (int i = 0; i < 4; i++) {
@@ -366,11 +381,27 @@ int main() {
         }
 
         solver->toImage(image);
-        
-        char path[256];
-        sprintf(path, "Frame%05d.png", iterations++);
-        lodepng_encode32_file(path, image, sizeX, sizeY);
+
+
+        cv::Mat M(sizeX, sizeY, CV_8UC4, (void*)image);
+        cv::Mat M_out = cv::Mat::zeros(sizeX*res_scale, sizeY*res_scale, CV_8UC1);
+
+        if (display_bool)        
+        {
+            cv::resizeWindow("Display window", sizeX*res_scale, sizeY*res_scale);
+            cv::resize(M , M_out, M_out.size(), 0 , 0, cv::INTER_CUBIC);
+            cv::imshow( "Display window", M_out ); 
+            cv::waitKey(1);  
+        }
+        else 
+        {
+            char path[256];
+            sprintf(path, "images/Frame%05d.png", iterations++);
+            lodepng_encode32_file(path, image, sizeX, sizeY);
+        }
+
     }
+    cv::destroyAllWindows();
 
     return 0;
 }

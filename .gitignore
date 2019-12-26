@@ -1,3 +1,7 @@
+# directories
+1-matrixless/build
+1-matrixless/debug
+
 # Binaries
 *.exe
 *.o
